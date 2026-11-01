@@ -33,7 +33,21 @@ jobs:
         if: env.HAS_KEY == 'true'
         env:
           GK_KEYSTORE_BASE64: ${{ secrets.GK_KEYSTORE_BASE64 }}
-        run: echo "$GK_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          GK_KEYSTORE_PASSWORD: ${{ secrets.GK_KEYSTORE_PASSWORD }}
+          GK_KEY_ALIAS: ${{ secrets.GK_KEY_ALIAS }}
+        run: |
+          # Ignore spaces and line breaks picked up when the secret was pasted
+          printf '%s' "$GK_KEYSTORE_BASE64" | tr -d '[:space:]' > "$RUNNER_TEMP/key.b64"
+          echo "Key text length after cleanup: $(wc -c < "$RUNNER_TEMP/key.b64") characters (expected 3712)"
+          if ! base64 -d "$RUNNER_TEMP/key.b64" > "$RUNNER_TEMP/upload.jks"; then
+            echo "::error::GK_KEYSTORE_BASE64 is not valid key text. Paste the whole contents of GK_KEYSTORE_BASE64.txt again."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$RUNNER_TEMP/upload.jks" -storepass "$(printf '%s' "$GK_KEYSTORE_PASSWORD" | tr -d '[:space:]')" -alias "$(printf '%s' "$GK_KEY_ALIAS" | tr -d '[:space:]')" > /dev/null; then
+            echo "::error::The key file opened, but GK_KEYSTORE_PASSWORD or GK_KEY_ALIAS does not match it. Check those two secrets."
+            exit 1
+          fi
+          echo "Upload key restored and checked."
 
       - name: Build test APK and Play Store bundle
         working-directory: android
@@ -44,6 +58,9 @@ jobs:
           GK_KEY_PASSWORD: ${{ secrets.GK_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
+          export GK_KEYSTORE_PASSWORD="$(printf '%s' "$GK_KEYSTORE_PASSWORD" | tr -d '[:space:]')"
+          export GK_KEY_PASSWORD="$(printf '%s' "$GK_KEY_PASSWORD" | tr -d '[:space:]')"
+          export GK_KEY_ALIAS="$(printf '%s' "$GK_KEY_ALIAS" | tr -d '[:space:]')"
           ./gradlew --no-daemon assembleDebug bundleRelease
 
       - name: Save the test APK
