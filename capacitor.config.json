@@ -1,0 +1,18 @@
+{
+  "appId": "com.jazzythinker.goalkeeper",
+  "appName": "Goalkeeper",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#F4F7F6"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_goalkeeper",
+      "iconColor": "#12866B"
+    }
+  }
+}

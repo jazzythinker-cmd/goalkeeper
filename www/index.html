@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Goalkeeper</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#F4F7F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1513" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Bundled copies of the fonts so the Android app looks right offline (SIL Open Font License). */
+@font-face{font-family:"GK Display";src:url(fonts/bricolage-grotesque-latin-500-normal.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"GK Display";src:url(fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"GK Display";src:url(fonts/bricolage-grotesque-latin-800-normal.woff2) format("woff2");font-weight:800;font-display:swap}
+@font-face{font-family:"GK Body";src:url(fonts/figtree-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"GK Body";src:url(fonts/figtree-latin-500-normal.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"GK Body";src:url(fonts/figtree-latin-600-normal.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"GK Body";src:url(fonts/figtree-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"GK Mono";src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2");font-weight:500;font-display:swap}
+
+/* Layout: on the web, a phone frame centred on a tinted ground; in the Android app, the same screens fill the display. */
+:root{
+  --accent:#12866B; --accent-ink:#FFFFFF; --accent-soft:#DDF1EA;
+  --ground:#DCE5E1; --surface:#F4F7F6; --card:#FFFFFF;
+  --ink:#13201B; --muted:#5A6A64; --line:#E0E7E4; --line-strong:#B9C6C1;
+  --ahead:#12866B; --behind:#B4561F; --behind-soft:#F8E6DA;
+  --shadow:0 1px 2px rgba(19,32,27,.06),0 8px 24px rgba(19,32,27,.06);
+  --frame:#13201B; --scrim:rgba(10,16,14,.42);
+  --f-display:"GK Display","Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"GK Body","Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"GK Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --top:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
+  --bottom:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --accent:#3DCBA4; --accent-ink:#06231B; --accent-soft:#16342B;
+  --ground:#070B0A; --surface:#0F1513; --card:#18211E;
+  --ink:#E7EFEC; --muted:#93A39D; --line:#25302C; --line-strong:#3B4A45;
+  --ahead:#3DCBA4; --behind:#F0975E; --behind-soft:#3A2518;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); --frame:#2A3632; --scrim:rgba(0,0,0,.6);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --accent:#3DCBA4; --accent-ink:#06231B; --accent-soft:#16342B;
+  --ground:#070B0A; --surface:#0F1513; --card:#18211E;
+  --ink:#E7EFEC; --muted:#93A39D; --line:#25302C; --line-strong:#3B4A45;
+  --ahead:#3DCBA4; --behind:#F0975E; --behind-soft:#3A2518;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); --frame:#2A3632; --scrim:rgba(0,0,0,.6);
+  color-scheme:dark}
+:root.custom{--accent:var(--ua);--ahead:var(--ua);--accent-ink:var(--ua-ink);--accent-soft:color-mix(in srgb,var(--ua) 16%,var(--card))}
+@media (prefers-color-scheme:dark){:root.custom:not([data-theme="light"]){
+  --accent:color-mix(in srgb,var(--ua) 72%,#fff);--ahead:color-mix(in srgb,var(--ua) 72%,#fff);--accent-ink:#0B1210;
+  --accent-soft:color-mix(in srgb,var(--ua) 26%,var(--card))}}
+:root.custom[data-theme="dark"]{
+  --accent:color-mix(in srgb,var(--ua) 72%,#fff);--ahead:color-mix(in srgb,var(--ua) 72%,#fff);--accent-ink:#0B1210;
+  --accent-soft:color-mix(in srgb,var(--ua) 26%,var(--card))}
+
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px;box-sizing:border-box;display:grid;place-items:center;overflow:hidden;-webkit-tap-highlight-color:transparent}
+*,*::before,*::after{box-sizing:border-box}
+button,input,textarea,select{font:inherit;color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.phone{width:min(390px,100%);height:min(820px,100%);background:var(--surface);border-radius:44px;
+  border:10px solid var(--frame);box-shadow:0 30px 60px rgba(0,0,0,.18);position:relative;overflow:hidden;
+  display:flex;flex-direction:column}
+@media (max-width:480px){.phone{border-width:0;border-radius:20px;width:100%;height:100%;box-shadow:none}}
+/* Android app: no frame, no fake status bar, content clears the real system bars */
+html.native body{padding:0;background:var(--surface);display:block}
+html.native .phone{width:100%;height:100%;border:0;border-radius:0;box-shadow:none}
+html.native .statusbar{display:none}
+html.native main{padding-top:calc(var(--top) + 8px)}
+html.native .toast{bottom:calc(84px + var(--bottom))}
+
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:12px 26px 4px;
+  font:600 13px/1 var(--f-body);font-variant-numeric:tabular-nums;flex:none}
+.statusbar .icons{display:flex;gap:5px;align-items:center}
+@media (max-width:480px){.statusbar{display:none}}
+
+main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 20px 28px;scrollbar-width:thin}
+.screen{display:flex;flex-direction:column;gap:16px}
+
+.eyebrow{font:600 11px/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 30px/1.05 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance;overflow-wrap:anywhere}
+h2{font:700 19px/1.15 var(--f-display);letter-spacing:-.01em;margin:0;text-wrap:balance;overflow-wrap:anywhere}
+h1:focus{outline:none}
+.lede{color:var(--muted);margin:0}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.head{display:flex;flex-direction:column;gap:6px;padding-top:8px}
+.toprow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.actions{display:flex;gap:8px;flex:none}
+.brand{display:flex;align-items:center;gap:7px;font:800 13px/1 var(--f-display);letter-spacing:-.01em;color:var(--accent)}
+
+/* Buttons */
+.iconbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.iconbtn.primary{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;border:1px solid transparent;border-radius:14px;padding:13px 16px;font-weight:700;cursor:pointer;min-height:48px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:var(--card);border-color:var(--line-strong)}
+.btn.quiet{background:none;color:var(--accent);padding:8px 4px;min-height:0}
+.btn.danger{background:var(--behind-soft);color:var(--behind)}
+.btn.block{width:100%}
+.linkbtn{display:inline-flex;gap:4px;align-items:center;background:none;border:0;padding:6px 8px 6px 0;color:var(--accent);font-weight:600;cursor:pointer}
+.navrow{display:flex;justify-content:space-between;align-items:center}
+
+/* Goal cards */
+.cards{display:flex;flex-direction:column;gap:12px;list-style:none;margin:0;padding:0}
+.card{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.goal-card{width:100%;text-align:left;border:0;background:none;padding:16px;display:grid;
+  grid-template-columns:76px 1fr auto;gap:14px;align-items:center;cursor:pointer;border-radius:20px}
+.goal-card:hover .chev{transform:translateX(3px)}
+.goal-card .meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.goal-card .next{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goal-card .next b{color:var(--ink);font-weight:600}
+.chev{color:var(--muted);transition:transform .2s}
+.add-card{width:100%;border:1.5px dashed var(--line-strong);border-radius:20px;background:none;padding:18px;display:flex;gap:10px;
+  align-items:center;justify-content:center;color:var(--muted);font-weight:600;cursor:pointer}
+.add-card:hover{color:var(--accent);border-color:var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:600 11px/1 var(--f-body);padding:5px 8px;border-radius:99px;background:var(--surface);color:var(--muted);
+  border:1px solid var(--line);white-space:nowrap}
+.chip.ahead{background:var(--accent-soft);color:var(--ahead);border-color:transparent}
+.chip.behind{background:var(--behind-soft);color:var(--behind);border-color:transparent}
+.chip.example{border-style:dashed}
+.empty{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 22px;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.empty svg.big-ic{color:var(--accent)}
+.how{list-style:none;margin:4px 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.how li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;font-size:14px;color:var(--muted)}
+.how li b{color:var(--ink);font-weight:600}
+.how .n{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:600 12px/1 var(--f-mono)}
+
+/* Rings */
+.ring{position:relative;display:grid;place-items:center}
+.ring svg{transform:rotate(-90deg);display:block}
+.ring .track{stroke:var(--line)}
+.ring .bar{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+.ring .label{position:absolute;inset:0;display:grid;place-items:center;font:700 17px/1 var(--f-display)}
+.ring .label small{font-size:.6em;font-weight:600}
+
+/* Detail */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.hero .ring .label{font-size:28px}
+.why{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:14px;color:var(--muted);margin:0;overflow-wrap:anywhere}
+.why b{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat .v{font:700 20px/1 var(--f-display)}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat.late .v{color:var(--behind)}
+
+.milestones{display:flex;flex-direction:column;gap:10px;list-style:none;margin:0;padding:0}
+details.ms{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+details.ms summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center}
+details.ms summary::-webkit-details-marker{display:none}
+.ms-dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 12px/1 var(--f-mono);
+  border:2px solid var(--line-strong);color:var(--muted);transition:background .3s,border-color .3s,color .3s}
+.ms.done .ms-dot{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.ms-title{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.ms-title small{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px}
+.ms-count{font:500 12px/1 var(--f-mono);color:var(--muted);display:flex;align-items:center;gap:8px}
+.ms-count svg{transition:transform .25s}
+details[open] .ms-count svg{transform:rotate(180deg)}
+.ms-bar{height:3px;background:var(--line);margin:0 16px}
+.ms-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.ms.pop .ms-dot{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+.addstep{display:flex;gap:8px;padding:0 16px 14px}
+.addstep input{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px dashed var(--line-strong);background:var(--surface)}
+.addstep button{border:0;border-radius:12px;padding:0 14px;background:var(--accent-soft);color:var(--accent);font-weight:700;cursor:pointer}
+
+/* Steps */
+.steps{list-style:none;margin:0;padding:8px 8px 10px}
+.step{position:relative}
+.step input{position:absolute;opacity:0;width:1px;height:1px}
+.step label{display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer}
+.step label:hover{background:var(--surface)}
+.box{width:24px;height:24px;border-radius:50%;border:2px solid var(--line-strong);display:grid;place-items:center;
+  transition:background .2s,border-color .2s,transform .2s;position:relative}
+.box svg{width:13px;height:13px}
+.box path{stroke:var(--accent-ink);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .28s ease .08s}
+.step input:checked + label .box{background:var(--accent);border-color:var(--accent)}
+.step input:checked + label .box path{stroke-dashoffset:0}
+.step input:focus-visible + label{outline:2px solid var(--accent);outline-offset:-2px}
+.step.just input:checked + label .box{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.step.just input:checked + label .box::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--accent);animation:ripple .6s ease-out forwards}
+.txt{background-image:linear-gradient(currentColor,currentColor);background-repeat:no-repeat;background-position:0 55%;
+  background-size:0 1.5px;transition:background-size .35s ease,color .3s;min-width:0;overflow-wrap:anywhere}
+.step input:checked + label .txt{background-size:100% 1.5px;color:var(--muted)}
+.when{font:500 11px/1 var(--f-mono);color:var(--muted);white-space:nowrap}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes ripple{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(2)}}
+
+/* Form */
+form.goalform{display:flex;flex-direction:column;gap:18px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.lbl{font-weight:700;font-size:14px}
+.lbl .opt{font-weight:500;color:var(--muted)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.err{font-size:12.5px;color:var(--behind);font-weight:600;margin:0}
+.input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line-strong);background:var(--card);min-height:48px}
+textarea.input{min-height:96px;resize:vertical;line-height:1.5}
+.input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.input[aria-invalid="true"]{border-color:var(--behind)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:360px){.two{grid-template-columns:1fr}}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:6px 10px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.quick button:hover{color:var(--accent);border-color:var(--accent)}
+.mslist{display:flex;flex-direction:column;gap:12px}
+fieldset.msf{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+fieldset.msf legend{font:600 11px/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.msf-top{display:flex;gap:8px;align-items:flex-start}
+.msf-top .field{flex:1}
+.rm{width:40px;height:48px;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:10px;flex:none}
+.rm:hover{color:var(--behind)}
+.savebar{position:sticky;bottom:-28px;margin:0 -20px -28px;padding:12px 20px 20px;background:linear-gradient(transparent,var(--surface) 30%);display:flex;flex-direction:column;gap:10px}
+.confirm{background:var(--behind-soft);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.confirm p{margin:0;font-weight:600;color:var(--behind)}
+.confirm .row{display:flex;gap:8px}
+.confirm .row .btn{flex:1}
+
+/* Next up */
+.next-group{display:flex;flex-direction:column}
+.next-group .gname{font-size:12px;color:var(--muted);padding:12px 16px 0;display:flex;justify-content:space-between;gap:10px}
+.next-group .gname span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.next-group .steps{padding-top:2px}
+
+/* Progress */
+.big{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big .tile{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.big .tile:first-child{grid-column:1/-1;background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.big .tile:first-child .k{color:inherit;opacity:.85}
+.big .v{font:800 34px/1 var(--f-display);letter-spacing:-.02em}
+.big .k{font-size:13px;color:var(--muted)}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 10px;display:flex;flex-direction:column;gap:10px}
+.chart-top{display:flex;justify-content:space-between;align-items:baseline}
+.bars{display:grid;grid-template-columns:repeat(30,1fr);gap:3px;height:110px;align-items:end;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 50%;border-bottom:1px solid var(--line-strong)}
+.bars span{background:var(--accent);opacity:.85;border-radius:3px 3px 0 0;transition:height .6s cubic-bezier(.2,.8,.2,1)}
+.bars span.zero{background:var(--line-strong);height:2px!important;opacity:.6}
+.bars span.today{opacity:1;outline:2px solid var(--accent);outline-offset:1px}
+.axis{display:flex;justify-content:space-between;font:500 11px/1 var(--f-mono);color:var(--muted)}
+.pace{display:flex;flex-direction:column;gap:14px;padding:14px;list-style:none;margin:0}
+.pace li{display:flex;flex-direction:column;gap:6px}
+.pace .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pace .row span:first-child{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.track2{position:relative;height:8px;background:var(--line);border-radius:8px}
+.track2 i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:8px;transition:width .6s}
+.track2 b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:2px}
+.pace small{color:var(--muted);font-size:12px}
+.legend{font-size:12px;color:var(--muted);padding:0 14px 14px;display:flex;gap:14px;flex-wrap:wrap}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+.legend b{width:2px;height:12px;background:var(--ink)}
+
+/* Nav */
+nav.tabbar{flex:none;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);
+  background:var(--card);padding:6px 8px calc(10px + var(--bottom))}
+nav.tabbar button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 0;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:12px}
+nav.tabbar button svg{width:24px;height:24px;transition:transform .2s}
+nav.tabbar button[aria-current="page"]{color:var(--accent)}
+nav.tabbar button[aria-current="page"] svg{transform:translateY(-1px)}
+.pill{width:44px;height:26px;border-radius:99px;display:grid;place-items:center;transition:background .2s}
+nav.tabbar button[aria-current="page"] .pill{background:var(--accent-soft)}
+
+/* Settings sheet */
+.scrim{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:flex-end;z-index:30;animation:fade .2s}
+.sheet{background:var(--card);width:100%;border-radius:26px 26px 0 0;padding:10px 20px calc(24px + var(--bottom));display:flex;flex-direction:column;gap:16px;animation:up .28s cubic-bezier(.2,.8,.2,1);max-height:92%;overflow-y:auto}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--line-strong);align-self:center}
+.group{display:flex;flex-direction:column;gap:10px}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.setrow .field{gap:2px}
+.switch{width:52px;height:32px;border-radius:99px;border:0;background:var(--line-strong);position:relative;cursor:pointer;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+.switch:disabled{opacity:.5;cursor:not-allowed}
+.timebox{display:flex;gap:10px;align-items:center}
+.timebox .input{width:auto;min-width:140px;font-family:var(--f-mono)}
+.swatches{display:flex;gap:12px;flex-wrap:wrap;border:0;padding:0;margin:0}
+.sw{position:relative;cursor:pointer}
+.sw input{position:absolute;opacity:0;inset:0}
+.sw span{width:40px;height:40px;border-radius:50%;display:block;border:3px solid var(--card);box-shadow:0 0 0 1.5px var(--line-strong)}
+.sw input:checked + span{box-shadow:0 0 0 2.5px var(--ink)}
+.sw input:focus-visible + span{outline:2px solid var(--accent);outline-offset:3px}
+.custom-row{display:flex;gap:10px;align-items:center}
+.custom-row input[type=color]{width:48px;height:48px;padding:0;border:1px solid var(--line-strong);border-radius:12px;background:var(--card);cursor:pointer;flex:none}
+.custom-row .input{flex:1;min-width:0;font-family:var(--f-mono);text-transform:uppercase}
+.divider{height:1px;background:var(--line)}
+details.policy{border:1px solid var(--line);border-radius:14px;padding:0 14px}
+details.policy summary{cursor:pointer;padding:12px 0;font-weight:600}
+details.policy p{margin:0 0 12px;font-size:13.5px;color:var(--muted)}
+.ver{font:500 11px/1 var(--f-mono);color:var(--muted);text-align:center}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+.toast{position:absolute;left:16px;right:16px;bottom:84px;background:var(--ink);color:var(--surface);padding:12px 14px;
+  border-radius:14px;font-weight:600;font-size:14px;transform:translateY(20px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:none;z-index:40}
+.toast.show{transform:none;opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.screen{animation:in .28s ease}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="statusbar" aria-hidden="true">
+    <span id="clock" class="num">9:41</span>
+    <span class="icons">
+      <svg width="17" height="11" viewBox="0 0 17 11"><g fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></g></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="23" y="4" width="1.5" height="4" rx=".7" fill="currentColor" opacity=".4"/></svg>
+    </span>
+  </div>
+  <main id="main" tabindex="-1"></main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <nav class="tabbar" aria-label="Main">
+    <button data-tab="goals" type="button"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></span>Goals</button>
+    <button data-tab="next" type="button"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l2.5 2.5L11 5"/><path d="M14 7h6"/><path d="M4 16h7M14 16h6"/></svg></span>Next up</button>
+    <button data-tab="progress" type="button"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-9M20 20V4"/></svg></span>Progress</button>
+  </nav>
+</div>
+
+<script>
+(async function(){
+const VERSION='1.0.0';
+/* ---------- Platform ---------- */
+const Cap=window.Capacitor;
+const native=!!(Cap&&Cap.isNativePlatform&&Cap.isNativePlatform());
+const Plug=native?Cap.Plugins:{};
+if(native)document.documentElement.classList.add('native');
+
+/* ---------- Dates (local calendar days) ---------- */
+const DAY=864e5;
+let today=new Date();today.setHours(0,0,0,0);
+const shift=n=>{const d=new Date(today);d.setDate(d.getDate()+n);return d};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=s=>new Date(s+'T00:00:00');
+const ago=n=>n==null?null:iso(shift(-n));
+const fmt=(d,opt={day:'numeric',month:'short'})=>(typeof d==='string'?parse(d):d).toLocaleDateString('en-GB',opt);
+const dayIndex=s=>Math.round((today-parse(s))/DAY);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+Date.now().toString(36).slice(-4)+Math.random().toString(36).slice(2,6);
+
+/* ---------- Example goals (only added when the user asks) ---------- */
+const EXAMPLES=[
+ {id:'ex-run',title:'Run a 10K in under 60 minutes',cat:'Fitness',start:-42,due:105,why:'Prove I can stick with a training block start to finish.',
+  ms:[['Build a running base',[['Buy proper running shoes',38],['Run three times a week for two weeks',34],['First continuous 5K',31]]],
+   ['Extend to 8K',[['Long run: 6K',20],['Add one tempo run per week',9],['Long run: 7K',12],['Long run: 8K without walking',null]]],
+   ['Speed work',[['Intervals: 6 × 400 m',2],['Hill repeats on the park loop',null],['5K tempo under 30:00',null]]],
+   ['Race day',[['Register for a February 10K',null],['Write a taper-week plan',null],['Run the race',null]]]]},
+ {id:'ex-site',title:'Launch my portfolio site',cat:'Career',start:-30,due:49,why:'Have one link to send instead of a folder of PDFs.',
+  ms:[['Choose the work',[['Shortlist four case studies',27],['Write case study 1',18],['Write case study 2',12],['Write case study 3',null],['Write case study 4',null]]],
+   ['Design',[['Collect a moodboard',24],['Wireframe the home page',14],['Settle type and colour',9]]],
+   ['Build',[['Set up repo and hosting',6],['Build the home page',1],['Case study page template',null],['Contact form',null]]],
+   ['Launch',[['Get three friends to review',null],['Buy the domain',null],['Post the announcement',null]]]]},
+ {id:'ex-lang',title:'Pass the JLPT N5 exam',cat:'Learning',start:-75,due:35,why:'A fixed exam date keeps daily practice honest.',
+  ms:[['Learn kana',[['Hiragana, all 46',70],['Katakana, all 46',58],['Type kana without a chart',55]]],
+   ['Vocabulary',[['200 words',40],['400 words',22],['600 words',8],['800 words',null]]],
+   ['Grammar',[['Genki I, chapters 1–6',30],['Particle drill',14],['Genki I, chapters 7–12',null]]],
+   ['Exam prep',[['Mock test 1',2],['Mock test 2',null],['Timed listening practice',null],['Print the admit card',null]]]]}
+];
+const buildExamples=()=>EXAMPLES.map(g=>({id:g.id,title:g.title,cat:g.cat,why:g.why,example:true,start:iso(shift(g.start)),due:iso(shift(g.due)),
+  ms:g.ms.map(([t,steps],mi)=>({id:g.id+'-m'+mi,title:t,steps:steps.map(([text,d],si)=>({id:g.id+'-m'+mi+'-s'+si,text,done:ago(d)}))}))}));
+
+/* ---------- Storage: phone storage in the app, browser storage on the web ---------- */
+const KEY='goalkeeper-v1';
+const store={
+  async get(k){try{if(native&&Plug.Preferences){const r=await Plug.Preferences.get({key:k});return r.value}return localStorage.getItem(k)}catch(e){return null}},
+  async set(k,v){try{if(native&&Plug.Preferences)await Plug.Preferences.set({key:k,value:v});else localStorage.setItem(k,v)}catch(e){}}
+};
+let state=null;
+try{state=JSON.parse(await store.get(KEY)||'null')}catch(e){}
+if(!state||!Array.isArray(state.goals)){
+  state={goals:[],accent:null,reminder:{on:false,time:'20:00'}};
+  // Carry over goals made in the earlier web prototype, if any
+  try{const old=JSON.parse(localStorage.getItem('stepwise-v2')||'null');
+    if(old&&Array.isArray(old.goals)){state.goals=old.goals.filter(g=>!g.example);state.accent=old.accent||null}}catch(e){}
+}
+state.reminder=state.reminder||{on:false,time:'20:00'};
+let remT;
+const save=()=>{store.set(KEY,JSON.stringify(state));clearTimeout(remT);remT=setTimeout(scheduleReminder,600)};
+const goals=()=>state.goals;
+
+/* ---------- Accent ---------- */
+const SWATCHES=[['#12866B','Jade'],['#2F5BEA','Cobalt'],['#C2410C','Rust'],['#7048E8','Violet'],['#C0266D','Berry'],['#3F4A47','Graphite']];
+const DEFAULT_ACCENT='#12866B';
+const validHex=h=>/^#[0-9a-f]{6}$/i.test(h);
+const lum=h=>{const c=[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+function applyAccent(h){const r=document.documentElement;
+  if(!h||h.toUpperCase()===DEFAULT_ACCENT){r.classList.remove('custom');r.style.removeProperty('--ua');r.style.removeProperty('--ua-ink');return}
+  r.classList.add('custom');r.style.setProperty('--ua',h);r.style.setProperty('--ua-ink',lum(h)>.4?'#0B1210':'#FFFFFF')}
+applyAccent(state.accent);
+
+/* ---------- Derived values ---------- */
+const allSteps=g=>g.ms.flatMap(m=>m.steps);
+const pct=g=>{const a=allSteps(g);return a.length?Math.round(a.filter(s=>s.done).length/a.length*100):0};
+const msDone=m=>m.steps.length>0&&m.steps.every(s=>s.done);
+const nextStep=g=>{for(const m of g.ms)for(const s of m.steps)if(!s.done)return {m,s};return null};
+const daysLeft=g=>Math.round((parse(g.due)-today)/DAY);
+const elapsed=g=>{const span=parse(g.due)-parse(g.start);if(span<=0)return 100;return Math.min(100,Math.max(0,Math.round((today-parse(g.start))/span*100)))};
+const pace=g=>{const p=pct(g);if(p===100)return ['ahead','Complete'];if(daysLeft(g)<0)return ['behind','Overdue'];
+  const d=p-elapsed(g);return d>5?['ahead','Ahead of pace']:d<-5?['behind','Behind pace']:['','On pace']};
+const dueLabel=g=>{const n=daysLeft(g);return n>1?`${n} days left`:n===1?'Due tomorrow':n===0?'Due today':`${-n} day${n===-1?'':'s'} overdue`};
+const find=id=>goals().find(g=>g.id===id);
+const locate=sid=>{for(const g of goals())for(const m of g.ms)for(const s of m.steps)if(s.id===sid)return {g,m,s}};
+
+/* ---------- Daily reminder (Android app only) ---------- */
+const REMINDER_ID=1001;
+const fmtTime=t=>{const [h,m]=t.split(':').map(Number);const d=new Date();d.setHours(h,m,0,0);return d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true})};
+function reminderText(){
+  const open=goals().filter(g=>pct(g)<100).sort((a,b)=>parse(a.due)-parse(b.due));
+  if(!open.length)return {title:'Time for a new goal?',body:'Everything is ticked off. Set your next goal in Goalkeeper.'};
+  const g=open[0],n=nextStep(g);
+  return {title:`${g.title} · ${dueLabel(g).toLowerCase()}`,body:n?`Next step: ${n.s.text}`:'Open the goal to plan your next step.'};
+}
+async function scheduleReminder(){
+  if(!native||!Plug.LocalNotifications)return;
+  const LN=Plug.LocalNotifications;
+  try{
+    await LN.cancel({notifications:[{id:REMINDER_ID}]});
+    if(!state.reminder.on||!goals().length)return;
+    const [hour,minute]=state.reminder.time.split(':').map(Number);const t=reminderText();
+    await LN.schedule({notifications:[{id:REMINDER_ID,title:t.title,body:t.body,schedule:{on:{hour,minute},allowWhileIdle:true}}]});
+  }catch(e){}
+}
+async function askNotifyPermission(){
+  if(!native||!Plug.LocalNotifications)return false;
+  try{let p=await Plug.LocalNotifications.checkPermissions();if(p.display!=='granted')p=await Plug.LocalNotifications.requestPermissions();return p.display==='granted'}catch(e){return false}
+}
+
+/* ---------- Pieces ---------- */
+const ring=(p,size,w)=>{const r=(size-w)/2;
+  return `<div class="ring" style="width:${size}px;height:${size}px">
+   <svg width="${size}" height="${size}" aria-hidden="true"><circle class="track" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${w}"/>
+   <circle class="bar" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="${w}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" data-p="${p}"/></svg>
+   <span class="label" aria-hidden="true"><span><span class="pv">${p}</span><small>%</small></span></span></div>`};
+const settleRings=root=>requestAnimationFrame(()=>requestAnimationFrame(()=>
+  root.querySelectorAll('.ring .bar').forEach(c=>c.style.strokeDashoffset=100-c.dataset.p)));
+const I={
+ chev:`<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`,
+ back:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>`,
+ plus:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`,
+ gear:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>`,
+ x:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+ check:`<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>`,
+ caret:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>`,
+ mark:`<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-width="5" opacity=".25"/><path d="M24 5a19 19 0 1 1-19 19" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M16 24.5l6 6 11-12" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+ flag:`<svg class="big-ic" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>`
+};
+const whenText=s=>{const n=dayIndex(s);return n===0?'Today':n===1?'Yesterday':fmt(s)};
+const stepHTML=(s,showWhen=true)=>`<li class="step" data-step="${s.id}">
+  <input type="checkbox" id="c-${s.id}" ${s.done?'checked':''}>
+  <label for="c-${s.id}"><span class="box">${I.check}</span><span class="txt">${esc(s.text)}</span>
+  <span class="when">${showWhen&&s.done?whenText(s.done):''}</span></label></li>`;
+
+const main=document.getElementById('main');
+
+/* ---------- Screens ---------- */
+function viewGoals(){
+  const gs=goals();
+  const total=gs.reduce((a,g)=>a+allSteps(g).filter(s=>s.done).length,0),all=gs.reduce((a,g)=>a+allSteps(g).length,0);
+  main.innerHTML=`<section class="screen" aria-labelledby="t">
+   <div class="toprow"><div class="head"><span class="brand">${I.mark}Goalkeeper</span>
+     <h1 id="t">Your goals</h1></div>
+     <div class="actions"><button class="iconbtn" type="button" data-sheet aria-label="Settings">${I.gear}</button>
+     ${gs.length?`<button class="iconbtn primary" type="button" data-go="new" aria-label="New goal">${I.plus}</button>`:''}</div></div>
+   ${gs.length?`<p class="lede">${fmt(today,{weekday:'long',day:'numeric',month:'long'})} · <span class="num">${total}</span> of <span class="num">${all}</span> steps done</p>
+   <ul class="cards">${gs.map(g=>{const n=nextStep(g),[pc,pl]=pace(g);
+     return `<li class="card"><button class="goal-card" type="button" data-open="${g.id}" aria-label="${esc(g.title)}, ${pct(g)} percent complete, ${dueLabel(g)}. Open goal">
+      ${ring(pct(g),76,8)}
+      <span class="meta"><span class="eyebrow">${esc(g.cat)} · ${dueLabel(g)}</span>
+      <h2>${esc(g.title)}</h2>
+      <span class="chips"><span class="chip ${pc}">${pl}</span><span class="chip">${g.ms.filter(msDone).length}/${g.ms.length} milestones</span>${g.example?'<span class="chip example">Example</span>':''}</span>
+      <span class="next">${n?`Next: <b>${esc(n.s.text)}</b>`:'All steps done'}</span></span>${I.chev}</button></li>`}).join('')}
+     <li><button class="add-card" type="button" data-go="new">${I.plus}Add a goal</button></li></ul>`
+   :`<div class="empty">${I.flag}<h2>Turn a big goal into small wins</h2>
+     <ol class="how"><li><span class="n">1</span><span><b>Name the goal</b> and the date you want it done by.</span></li>
+      <li><span class="n">2</span><span><b>Break it into milestones,</b> each with a short checklist.</span></li>
+      <li><span class="n">3</span><span><b>Tick off steps</b> and watch your pace against the deadline.</span></li></ol>
+     <button class="btn primary" type="button" data-go="new">${I.plus}Create your first goal</button>
+     <button class="btn quiet" type="button" data-examples>Explore with example goals</button></div>`}
+  </section>`;
+  settleRings(main);
+}
+
+function viewDetail(id){
+  const g=find(id);if(!g)return go('goals',true);
+  const openIdx=Math.max(0,g.ms.findIndex(m=>!msDone(m)));
+  const a=allSteps(g),done=a.filter(s=>s.done).length,dl=daysLeft(g);
+  main.innerHTML=`<section class="screen" aria-labelledby="t">
+   <div class="navrow"><button class="linkbtn" type="button" data-back>${I.back}Goals</button>
+     <button class="btn quiet" type="button" data-go="edit-${g.id}">Edit goal</button></div>
+   <div class="hero">${ring(pct(g),112,11)}
+    <div class="head" style="padding:0"><span class="eyebrow">${esc(g.cat)}${g.example?' · Example':''}</span><h1 id="t" style="font-size:25px">${esc(g.title)}</h1>
+    <span class="chips"><span class="chip ${pace(g)[0]}" id="pace">${pace(g)[1]}</span></span></div></div>
+   ${g.why?`<p class="why"><b>Why:</b> ${esc(g.why)}</p>`:''}
+   <div class="stats">
+    <div class="stat"><span class="v num" id="st-steps">${done}/${a.length}</span><span class="k">Steps</span></div>
+    <div class="stat ${dl<0?'late':''}"><span class="v num">${Math.abs(dl)}</span><span class="k">${dl<0?'Days overdue':'Days left'}</span></div>
+    <div class="stat"><span class="v">${fmt(g.due)}</span><span class="k">Deadline${parse(g.due).getFullYear()!==today.getFullYear()?' '+parse(g.due).getFullYear():''}</span></div>
+   </div>
+   <h2>Milestones</h2>
+   <ol class="milestones">${g.ms.map((m,i)=>{const d=m.steps.filter(s=>s.done).length,n=m.steps.length;
+    return `<li><details class="ms ${msDone(m)?'done':''}" data-ms="${m.id}" ${i===openIdx?'open':''}>
+     <summary><span class="ms-dot" aria-hidden="true">${msDone(m)?'✓':i+1}</span>
+      <span class="ms-title">${esc(m.title)}<small>${msDone(m)?'Complete':i===openIdx?'In progress':'Up next'}</small></span>
+      <span class="ms-count"><span class="num"><span class="mc">${d}</span>/<span class="mt">${n}</span></span>${I.caret}</span></summary>
+     <div class="ms-bar"><i style="width:${n?d/n*100:0}%"></i></div>
+     <ul class="steps">${m.steps.map(s=>stepHTML(s)).join('')}</ul>
+     <form class="addstep" data-addstep="${m.id}"><label class="sr" for="as-${m.id}">Add a step to ${esc(m.title)}</label>
+      <input id="as-${m.id}" type="text" placeholder="Add a step" maxlength="120" autocomplete="off" enterkeyhint="done"><button type="submit">Add</button></form>
+    </details></li>`}).join('')}</ol>
+  </section>`;
+  settleRings(main);
+}
+
+function msBlock(m,i){
+  return `<fieldset class="msf" data-mid="${m?m.id:''}"><legend>Milestone ${i+1}</legend>
+   <div class="msf-top"><div class="field"><label class="lbl" for="mt-${i}">Milestone name</label>
+     <input class="input mt" id="mt-${i}" type="text" maxlength="80" value="${esc(m?m.title:'')}" placeholder="e.g. Build a running base" enterkeyhint="next"></div>
+     <button class="rm" type="button" data-rm aria-label="Remove milestone ${i+1}" style="margin-top:24px">${I.x}</button></div>
+   <div class="field"><label class="lbl" for="ms-${i}">Steps <span class="opt">· one per line</span></label>
+     <textarea class="input ms" id="ms-${i}" placeholder="Buy running shoes&#10;Run three times this week&#10;First continuous 5K">${esc(m?m.steps.map(s=>s.text).join('\n'):'')}</textarea></div>
+   <p class="err" hidden></p></fieldset>`;
+}
+
+function viewForm(id){
+  const g=id?find(id):null;if(id&&!g)return go('goals',true);
+  const minDate=iso(shift(1));
+  const cats=[...new Set(['Personal','Fitness','Health','Career','Learning','Money','Home','Creative',...goals().map(x=>x.cat)])];
+  main.innerHTML=`<section class="screen" aria-labelledby="t">
+   <div class="navrow"><button class="linkbtn" type="button" data-back>${I.back}Cancel</button></div>
+   <div class="head" style="padding-top:0"><span class="eyebrow">${g?'Edit':'New goal'}</span><h1 id="t">${g?esc(g.title):'What do you want to finish?'}</h1></div>
+   <form class="goalform" novalidate>
+    <div class="field"><label class="lbl" for="f-title">Goal</label>
+      <input class="input" id="f-title" type="text" maxlength="80" value="${esc(g?g.title:'')}" placeholder="e.g. Run a 10K in under 60 minutes" aria-describedby="e-title" enterkeyhint="next">
+      <p class="err" id="e-title" hidden></p></div>
+    <div class="two">
+     <div class="field"><label class="lbl" for="f-due">Deadline</label>
+      <input class="input" id="f-due" type="date" min="${g?g.start:minDate}" value="${g?g.due:''}" aria-describedby="h-due e-due"></div>
+     <div class="field"><label class="lbl" for="f-cat">Area</label>
+      <input class="input" id="f-cat" type="text" list="catlist" maxlength="20" value="${esc(g?g.cat:'Personal')}">
+      <datalist id="catlist">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+    </div>
+    <div class="field" style="margin-top:-10px">
+     <div class="quick" role="group" aria-label="Quick deadlines">${[['1 month',30],['3 months',91],['6 months',182],['End of year',null]].map(([l,d])=>`<button type="button" data-quick="${d??'eoy'}">${l}</button>`).join('')}</div>
+     <p class="hint" id="h-due"></p><p class="err" id="e-due" hidden></p></div>
+    <div class="field"><label class="lbl" for="f-why">Why it matters <span class="opt">· optional</span></label>
+      <textarea class="input" id="f-why" maxlength="160" style="min-height:72px" placeholder="One line you can come back to when motivation dips">${esc(g?g.why:'')}</textarea></div>
+    <div class="field"><span class="lbl">Milestones</span><p class="hint">Break the goal into a few stages. Each stage gets its own checklist.</p></div>
+    <div class="mslist">${(g?g.ms:[null]).map((m,i)=>msBlock(m,i)).join('')}</div>
+    <p class="err" id="e-ms" hidden></p>
+    <button class="btn ghost block" type="button" data-addms>${I.plus}Add milestone</button>
+    ${g?`<div id="delzone"><button class="btn danger block" type="button" data-del>Delete goal</button></div>`:''}
+    <div class="savebar"><button class="btn primary block" type="submit">${g?'Save changes':'Create goal'}</button></div>
+   </form></section>`;
+  const f=main.querySelector('form'),due=f.querySelector('#f-due'),hint=f.querySelector('#h-due');
+  const showHint=()=>{if(!due.value){hint.textContent='Pick the date you want this done by.';return}
+    const n=Math.round((parse(due.value)-today)/DAY);hint.textContent=n>0?`${fmt(due.value,{weekday:'short',day:'numeric',month:'short',year:'numeric'})} · ${n} day${n>1?'s':''} from today`:n===0?'That is today.':'That date has passed.'};
+  showHint();due.addEventListener('input',showHint);due.addEventListener('change',showHint);
+  f.querySelectorAll('[data-quick]').forEach(b=>b.addEventListener('click',()=>{
+    const v=b.dataset.quick;due.value=v==='eoy'?(today.getMonth()===11&&today.getDate()===31?iso(shift(365)):today.getFullYear()+'-12-31'):iso(shift(+v));showHint();clearErr(due,'e-due')}));
+  const renumber=()=>f.querySelectorAll('.msf').forEach((fs,i)=>{fs.querySelector('legend').textContent='Milestone '+(i+1);
+    const rm=fs.querySelector('[data-rm]');rm.setAttribute('aria-label','Remove milestone '+(i+1));rm.hidden=f.querySelectorAll('.msf').length<2});
+  renumber();
+  let counter=f.querySelectorAll('.msf').length;
+  f.addEventListener('click',e=>{
+    if(e.target.closest('[data-addms]')){f.querySelector('.mslist').insertAdjacentHTML('beforeend',msBlock(null,counter++));renumber();
+      [...f.querySelectorAll('.msf')].pop().querySelector('.mt').focus()}
+    const rm=e.target.closest('[data-rm]');if(rm){rm.closest('.msf').remove();renumber()}
+    if(e.target.closest('[data-del]')){const z=f.querySelector('#delzone');const n=allSteps(g).length;
+      z.innerHTML=`<div class="confirm" role="alert"><p>Delete “${esc(g.title)}” and its ${n} step${n===1?'':'s'}? This can’t be undone.</p>
+       <div class="row"><button class="btn ghost" type="button" data-keep>Keep it</button><button class="btn danger" type="button" data-really>Delete</button></div></div>`;
+      z.querySelector('[data-keep]').focus()}
+    if(e.target.closest('[data-keep]')){f.querySelector('#delzone').innerHTML='<button class="btn danger block" type="button" data-del>Delete goal</button>'}
+    if(e.target.closest('[data-really]')){state.goals=goals().filter(x=>x.id!==g.id);save();go('goals',true);toast('Goal deleted')}
+  });
+  f.addEventListener('input',e=>{if(e.target.id==='f-title')clearErr(e.target,'e-title');if(e.target.id==='f-due')clearErr(e.target,'e-due');
+    const fs=e.target.closest('.msf');if(fs){fs.querySelector('.err').hidden=true;fs.querySelectorAll('.input').forEach(x=>x.removeAttribute('aria-invalid'))}
+    f.querySelector('#e-ms').hidden=true});
+  f.addEventListener('submit',e=>{e.preventDefault();submitForm(f,g)});
+}
+function clearErr(input,id){input.removeAttribute('aria-invalid');const e=document.getElementById(id);if(e)e.hidden=true}
+function setErr(input,id,msg){input.setAttribute('aria-invalid','true');const e=document.getElementById(id);e.textContent=msg;e.hidden=false}
+
+function submitForm(f,g){
+  let first=null;const flag=el=>{if(!first)first=el};
+  const title=f.querySelector('#f-title'),due=f.querySelector('#f-due');
+  const t=title.value.trim();if(!t){setErr(title,'e-title','Give your goal a name.');flag(title)}
+  const dv=due.value;
+  if(!dv){setErr(due,'e-due','Choose a deadline.');flag(due)}
+  else if(!g&&parse(dv)<=today){setErr(due,'e-due','Pick a date after today.');flag(due)}
+  else if(g&&parse(dv)<=parse(g.start)){setErr(due,'e-due','The deadline has to be after the start date, '+fmt(g.start)+'.');flag(due)}
+  const blocks=[...f.querySelectorAll('.msf')];const ms=[];
+  blocks.forEach(fs=>{const mt=fs.querySelector('.mt'),st=fs.querySelector('.ms'),er=fs.querySelector('.err');
+    const name=mt.value.trim(),lines=st.value.split('\n').map(x=>x.trim()).filter(Boolean);
+    if(!name&&!lines.length)return;
+    if(!name){mt.setAttribute('aria-invalid','true');er.textContent='Name this milestone.';er.hidden=false;flag(mt);return}
+    if(!lines.length){st.setAttribute('aria-invalid','true');er.textContent='Add at least one step, one per line.';er.hidden=false;flag(st);return}
+    ms.push({mid:fs.dataset.mid,name,lines})});
+  const em=f.querySelector('#e-ms');
+  if(!first&&!ms.length){em.textContent='Add at least one milestone with a step.';em.hidden=false;flag(blocks[0]?.querySelector('.mt')||f.querySelector('[data-addms]'))}
+  if(first){first.focus();first.scrollIntoView({block:'center',behavior:'smooth'});return}
+
+  const why=f.querySelector('#f-why').value.trim(),cat=f.querySelector('#f-cat').value.trim()||'Personal';
+  const oldDone={};if(g)allSteps(g).forEach(s=>{oldDone[s.text.toLowerCase()]=s.done});
+  const newMs=ms.map(x=>{const mid=x.mid||uid('m');const old=g&&g.ms.find(m=>m.id===x.mid);
+    return {id:mid,title:x.name,steps:x.lines.map(text=>{const prev=old&&old.steps.find(s=>s.text===text);
+      return {id:prev?prev.id:uid('s'),text,done:prev?prev.done:(oldDone[text.toLowerCase()]??null)}})}});
+  if(g){Object.assign(g,{title:t,due:dv,cat,why,ms:newMs});save();go('goal-'+g.id,true);toast('Changes saved')}
+  else{const ng={id:uid('g'),title:t,cat,why,start:iso(today),due:dv,ms:newMs};
+    state.goals.unshift(ng);save();go('goal-'+ng.id,true);toast('Goal created. First step: '+newMs[0].steps[0].text)}
+}
+
+function viewNext(){
+  const groups=goals().map(g=>{const ms=g.ms.find(m=>!msDone(m));return ms?{g,ms,open:ms.steps.filter(s=>!s.done).slice(0,2)}:null}).filter(Boolean);
+  main.innerHTML=`<section class="screen" aria-labelledby="t">
+   <div class="head"><span class="eyebrow">One stage per goal</span><h1 id="t">Next up</h1>
+   <p class="lede">Open steps from each goal’s current milestone, soonest deadline first.</p></div>
+   ${groups.length?groups.sort((a,b)=>parse(a.g.due)-parse(b.g.due)).map(({g,ms,open})=>`<div class="card next-group"><div class="gname"><span>${esc(g.title)}</span><span>${dueLabel(g)}</span></div>
+      <ul class="steps" aria-label="${esc(ms.title)}">${open.map(s=>stepHTML(s,false)).join('')}</ul></div>`).join('')
+   :`<div class="empty">${I.flag}<h2>${goals().length?'Everything is ticked off':'Nothing queued yet'}</h2><p class="lede">${goals().length?'Every step in every goal is done. Set a new goal to keep going.':'Create a goal and its first steps will show up here.'}</p>
+     <button class="btn primary" type="button" data-go="new">${I.plus}New goal</button></div>`}
+  </section>`;
+}
+
+function viewProgress(){
+  const steps=goals().flatMap(g=>allSteps(g));
+  const counts=Array(30).fill(0);
+  steps.forEach(s=>{if(s.done){const n=dayIndex(s.done);if(n>=0&&n<30)counts[29-n]++}});
+  const month=counts.reduce((a,b)=>a+b,0),prev=steps.filter(s=>s.done&&dayIndex(s.done)>=30&&dayIndex(s.done)<60).length;
+  let streak=0,i=counts[29]?29:28;while(i>=0&&counts[i]){streak++;i--}
+  const msClosed=goals().flatMap(g=>g.ms).filter(m=>msDone(m)&&Math.min(...m.steps.map(s=>dayIndex(s.done)))<30).length;
+  const peak=Math.max(...counts),max=Math.max(2,peak),delta=month-prev;
+  main.innerHTML=`<section class="screen" aria-labelledby="t">
+   <div class="head"><span class="eyebrow">Last 30 days</span><h1 id="t">Momentum</h1></div>
+   <div class="big">
+    <div class="tile"><span class="v num">${month}</span><span class="k">steps finished · ${delta>=0?'+':''}${delta} vs the 30 days before</span></div>
+    <div class="tile"><span class="v num">${streak}</span><span class="k">day streak${counts[29]?'':' · tick one off today to extend it'}</span></div>
+    <div class="tile"><span class="v num">${msClosed}</span><span class="k">milestones closed</span></div>
+   </div>
+   <div class="chart">
+    <div class="chart-top"><h2 style="font-size:16px">Steps per day</h2><span class="when">peak ${peak}</span></div>
+    <div class="bars" role="img" aria-label="Daily steps finished over the last 30 days, ${month} in total, most in one day ${peak}.">
+     ${counts.map((c,j)=>`<span class="${c?'':'zero'} ${j===29?'today':''}" style="height:${c/max*100}%" title="${fmt(shift(j-29))}: ${c}"></span>`).join('')}</div>
+    <div class="axis"><span>${fmt(shift(-29))}</span><span>${fmt(shift(-15))}</span><span>Today</span></div>
+   </div>
+   ${goals().length?`<div class="card"><ul class="pace">${goals().map(g=>{const [pc,pl]=pace(g);
+     return `<li><div class="row"><span>${esc(g.title)}</span><span class="chip ${pc}">${pl}</span></div>
+     <div class="track2" role="img" aria-label="${pct(g)} percent done, ${elapsed(g)} percent of the time to the deadline used"><i style="width:${pct(g)}%"></i><b style="left:calc(${elapsed(g)}% - 1px)"></b></div>
+     <small><span class="num">${pct(g)}%</span> done · <span class="num">${elapsed(g)}%</span> of the time to ${fmt(g.due)} used</small></li>`}).join('')}</ul>
+    <div class="legend"><span><i></i>Done</span><span><b></b>Where you should be today</span></div></div>`:''}
+  </section>`;
+}
+
+/* ---------- Settings sheet ---------- */
+let sheetClose=null;
+function openSheet(){
+  const phone=document.getElementById('phone'),opener=document.activeElement;
+  const cur=(state.accent||DEFAULT_ACCENT).toUpperCase();
+  const r=state.reminder;
+  const scrim=document.createElement('div');scrim.className='scrim';
+  scrim.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="navrow"><h2 id="sh-t">Settings</h2><button class="iconbtn" type="button" data-close aria-label="Close settings">${I.x}</button></div>
+
+    <div class="group">
+     <div class="setrow"><div class="field"><span class="lbl" id="rem-l">Daily reminder</span>
+       <p class="hint" id="rem-h">${native?(r.on?`Every day at ${fmtTime(r.time)}, with your next step.`:'A nudge each day with the next step on your nearest deadline.'):'Reminders work in the Android app.'}</p></div>
+      <button class="switch" type="button" role="switch" id="rem" aria-checked="${native&&r.on}" aria-labelledby="rem-l" aria-describedby="rem-h" ${native?'':'disabled'}></button></div>
+     <div class="timebox" id="rem-time" ${native&&r.on?'':'hidden'}><label class="lbl" for="rem-t">Time</label><input class="input" id="rem-t" type="time" value="${r.time}"></div>
+     <p class="err" id="rem-err" hidden>Notifications are turned off for Goalkeeper. Turn them on in your phone’s Settings › Apps › Goalkeeper › Notifications, then try again.</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="group"><span class="lbl">Accent colour</span>
+     <fieldset class="swatches"><legend class="sr">Preset colours</legend>${SWATCHES.map(([h,n])=>`<label class="sw" title="${n}"><input type="radio" name="sw" value="${h}" ${h===cur?'checked':''} aria-label="${n}"><span style="background:${h}"></span></label>`).join('')}</fieldset>
+     <div class="custom-row"><input type="color" id="pick" value="${cur.toLowerCase()}" aria-label="Pick your own colour">
+      <label class="sr" for="hex">Hex code</label><input class="input" id="hex" type="text" maxlength="7" value="${cur}" spellcheck="false" autocomplete="off" aria-describedby="hex-err"></div>
+     <p class="err" id="hex-err" hidden>Use a six-digit hex code such as #2F5BEA.</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="group"><span class="lbl">Your data</span>
+     <p class="hint">${native?'Your goals are saved on this phone. If Android backup is on, they are included in your phone’s own backup to your Google account.':'Your goals are saved in this browser only. Clearing browser data deletes them.'}</p>
+     ${goals().some(g=>g.example)?`<div id="exzone"><button class="btn ghost block" type="button" data-clear>Remove example goals</button></div>`:''}
+     <details class="policy"><summary>Privacy policy</summary>
+      <p>Goalkeeper does not collect, send or share any personal data. Your goals, steps and settings are stored on your device. If you have Android backup turned on, your phone may include them in its own backup to your Google account; the developer cannot see that backup.</p>
+      <p>There are no accounts, ads, analytics or third-party trackers. The app needs no internet connection to work.</p>
+      <p>If you turn on the daily reminder, Goalkeeper asks for permission to show notifications. Reminders are scheduled on your device.</p>
+      <p>Contact: jazzythinker@gmail.com</p></details>
+    </div>
+    <p class="ver">Goalkeeper ${VERSION}</p>
+  </div>`;
+  phone.appendChild(scrim);
+  const $=s=>scrim.querySelector(s);
+  // Reminder
+  const sw=$('#rem'),tbox=$('#rem-time'),tin=$('#rem-t'),rh=$('#rem-h'),rerr=$('#rem-err');
+  sw.addEventListener('click',async()=>{
+    const want=sw.getAttribute('aria-checked')!=='true';rerr.hidden=true;
+    if(want&&!(await askNotifyPermission())){rerr.hidden=false;return}
+    state.reminder.on=want;sw.setAttribute('aria-checked',want);tbox.hidden=!want;
+    rh.textContent=want?`Every day at ${fmtTime(state.reminder.time)}, with your next step.`:'A nudge each day with the next step on your nearest deadline.';
+    save();if(want)toast('Reminder set for '+fmtTime(state.reminder.time))});
+  tin.addEventListener('change',()=>{if(!tin.value)return;state.reminder.time=tin.value;rh.textContent=`Every day at ${fmtTime(tin.value)}, with your next step.`;save()});
+  // Accent
+  const hex=$('#hex'),pick=$('#pick'),herr=$('#hex-err');
+  const set=h=>{h=h.toUpperCase();state.accent=h===DEFAULT_ACCENT?null:h;applyAccent(state.accent);save();
+    hex.value=h;pick.value=h.toLowerCase();scrim.querySelectorAll('[name=sw]').forEach(x=>x.checked=x.value===h);herr.hidden=true;hex.removeAttribute('aria-invalid')};
+  scrim.querySelectorAll('[name=sw]').forEach(x=>x.addEventListener('change',()=>set(x.value)));
+  pick.addEventListener('input',()=>set(pick.value));
+  hex.addEventListener('input',()=>{let v=hex.value.trim();if(v&&v[0]!=='#')v='#'+v;if(validHex(v))set(v);else if(v.length>=7){herr.hidden=false;hex.setAttribute('aria-invalid','true')}});
+  // Close
+  const close=()=>{scrim.remove();sheetClose=null;document.removeEventListener('keydown',onKey);render(curRoute());opener&&opener.focus&&opener.focus()};
+  sheetClose=close;
+  const onKey=e=>{if(e.key==='Escape')close();
+    if(e.key==='Tab'){const f=[...scrim.querySelectorAll('button:not(:disabled),input,summary')].filter(x=>!x.closest('[hidden]'));
+      const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}};
+  document.addEventListener('keydown',onKey);
+  scrim.addEventListener('click',e=>{if(e.target===scrim||e.target.closest('[data-close]'))close();
+    if(e.target.closest('[data-clear]')){const z=$('#exzone');
+      z.innerHTML=`<div class="confirm"><p>Remove the example goals and their history?</p><div class="row"><button class="btn ghost" type="button" data-keep>Keep them</button><button class="btn danger" type="button" data-really>Remove</button></div></div>`;
+      z.querySelector('[data-keep]').focus()}
+    if(e.target.closest('[data-keep]')){$('#exzone').innerHTML='<button class="btn ghost block" type="button" data-clear>Remove example goals</button>'}
+    if(e.target.closest('[data-really]')){state.goals=goals().filter(g=>!g.example);save();$('#exzone').remove();toast('Example goals removed')}
+  });
+  $('[data-close]').focus();
+}
+
+/* ---------- Interaction ---------- */
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
+
+function refreshDetail(g,m){
+  const det=main.querySelector(`[data-ms="${m.id}"]`);if(!det)return false;
+  const d=m.steps.filter(x=>x.done).length;
+  det.querySelector('.mc').textContent=d;det.querySelector('.mt').textContent=m.steps.length;
+  det.querySelector('.ms-bar i').style.width=(m.steps.length?d/m.steps.length*100:0)+'%';
+  const p=pct(g),bar=main.querySelector('.hero .bar');bar.dataset.p=p;bar.style.strokeDashoffset=100-p;
+  main.querySelector('.hero .pv').textContent=p;
+  const a=allSteps(g);main.querySelector('#st-steps').textContent=a.filter(x=>x.done).length+'/'+a.length;
+  const pc=main.querySelector('#pace'),[cls,lab]=pace(g);pc.className='chip '+cls;pc.textContent=lab;
+  const done=msDone(m);det.classList.toggle('done',done);
+  det.querySelector('.ms-dot').textContent=done?'✓':g.ms.indexOf(m)+1;
+  det.querySelector('.ms-title small').textContent=done?'Complete':'In progress';
+  return det;
+}
+
+main.addEventListener('change',e=>{
+  const li=e.target.closest('.step');if(!li)return;
+  const {g,m,s}=locate(li.dataset.step);
+  const wasMs=msDone(m);
+  s.done=e.target.checked?iso(today):null;save();
+  li.classList.remove('just');void li.offsetWidth;if(e.target.checked)li.classList.add('just');
+  const w=li.querySelector('.when');if(w&&!li.closest('.next-group'))w.textContent=s.done?'Today':'';
+  const det=refreshDetail(g,m);
+  if(msDone(m)&&!wasMs){if(det){det.classList.remove('pop');void det.offsetWidth;det.classList.add('pop')}
+    toast(pct(g)===100?'Goal complete: '+g.title:'Milestone complete: '+m.title)}
+  else if(!det&&e.target.checked)toast(pct(g)+'% of “'+g.title+'” done');
+});
+main.addEventListener('submit',e=>{
+  const f=e.target.closest('[data-addstep]');if(!f)return;e.preventDefault();
+  const inp=f.querySelector('input'),text=inp.value.trim();if(!text){inp.focus();return}
+  const g=goals().find(G=>G.ms.some(M=>M.id===f.dataset.addstep)),m=g.ms.find(M=>M.id===f.dataset.addstep);
+  const s={id:uid('s'),text,done:null};m.steps.push(s);save();
+  f.previousElementSibling.insertAdjacentHTML('beforeend',stepHTML(s));inp.value='';inp.focus();refreshDetail(g,m);
+});
+main.addEventListener('click',e=>{
+  const o=e.target.closest('[data-open]');if(o)return go('goal-'+o.dataset.open);
+  const gg=e.target.closest('[data-go]');if(gg)return go(gg.dataset.go);
+  if(e.target.closest('[data-back]'))return back();
+  if(e.target.closest('[data-sheet]'))return openSheet();
+  if(e.target.closest('[data-examples]')){const have=new Set(goals().map(g=>g.id));
+    state.goals.push(...buildExamples().filter(g=>!have.has(g.id)));save();render('goals');toast('Examples added. Remove them any time in Settings.')}
+});
+document.querySelectorAll('nav [data-tab]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab,true)));
+
+/* ---------- Routing (hash) and the Android back button ---------- */
+const curRoute=()=>location.hash.slice(1)||'goals';
+const isTop=h=>['goals','next','progress'].includes(h);
+function go(h,replace){
+  if(curRoute()===h)return render(h);
+  try{if(replace)location.replace('#'+h);else location.hash=h}catch(e){}
+  if(curRoute()!==h)render(h);
+}
+function back(){
+  const h=curRoute();
+  if(h.startsWith('edit-'))return go('goal-'+h.slice(5),true);
+  return go('goals',true);
+}
+function render(h){
+  h=h||'goals';
+  if(h.startsWith('goal-'))viewDetail(h.slice(5));
+  else if(h.startsWith('edit-'))viewForm(h.slice(5));
+  else if(h==='new')viewForm(null);
+  else if(h==='next')viewNext();else if(h==='progress')viewProgress();else viewGoals();
+  const tab=['next','progress'].includes(h)?h:'goals';
+  document.querySelectorAll('nav [data-tab]').forEach(b=>b.dataset.tab===tab?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
+  main.scrollTop=0;
+  const h1=main.querySelector('h1');if(h1&&document.activeElement&&document.activeElement!==document.body){h1.setAttribute('tabindex','-1');h1.focus({preventScroll:true})}
+}
+window.addEventListener('hashchange',()=>render(curRoute()));
+
+if(native&&Plug.App){
+  Plug.App.addListener('backButton',()=>{
+    if(sheetClose)return sheetClose();
+    const h=curRoute();
+    if(h==='goals')return Plug.App.minimizeApp?Plug.App.minimizeApp():Plug.App.exitApp();
+    back();
+  });
+  // Refresh dates and the reminder text when the app comes back to the front
+  Plug.App.addListener('resume',()=>{const t=new Date();t.setHours(0,0,0,0);if(+t!==+today){today=t;render(curRoute())}scheduleReminder()});
+}
+
+render(curRoute());
+scheduleReminder();
+const ck=document.getElementById('clock');const tick=()=>{ck.textContent=new Date().toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'})};tick();setInterval(tick,30000);
+})();
+</script>
+</body>
+</html>

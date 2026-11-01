@@ -1,0 +1,59 @@
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_KEY: ${{ secrets.GK_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install packages and copy the app into the Android project
+        run: |
+          npm ci
+          npx cap sync android
+
+      - name: Restore the upload key
+        if: env.HAS_KEY == 'true'
+        env:
+          GK_KEYSTORE_BASE64: ${{ secrets.GK_KEYSTORE_BASE64 }}
+        run: echo "$GK_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
+      - name: Build test APK and Play Store bundle
+        working-directory: android
+        env:
+          GK_KEYSTORE_PATH: ${{ env.HAS_KEY == 'true' && format('{0}/upload.jks', runner.temp) || '' }}
+          GK_KEYSTORE_PASSWORD: ${{ secrets.GK_KEYSTORE_PASSWORD }}
+          GK_KEY_ALIAS: ${{ secrets.GK_KEY_ALIAS }}
+          GK_KEY_PASSWORD: ${{ secrets.GK_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug bundleRelease
+
+      - name: Save the test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: goalkeeper-test-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Save the Play Store bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: goalkeeper-play-store-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
