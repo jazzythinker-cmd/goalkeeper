@@ -427,7 +427,9 @@ async function scheduleReminder(){
     await LN.cancel({notifications:[{id:REMINDER_ID}]});
     if(!state.reminder.on||!goals().length)return;
     const [hour,minute]=state.reminder.time.split(':').map(Number);const t=reminderText();
-    await LN.schedule({notifications:[{id:REMINDER_ID,title:t.title,body:t.body,schedule:{on:{hour,minute},allowWhileIdle:true}}]});
+    // isExactNotification:false — a daily nudge doesn't need to-the-minute timing, and asking for
+    // exact alarms opens Android's "Alarms & reminders" page (greyed out, since the app doesn't request that permission)
+    await LN.schedule({notifications:[{id:REMINDER_ID,title:t.title,body:t.body,isExactNotification:false,schedule:{on:{hour,minute},allowWhileIdle:true}}]});
   }catch(e){}
 }
 async function askNotifyPermission(){
