@@ -12,14 +12,14 @@ jobs:
     env:
       HAS_KEY: ${{ secrets.GK_KEYSTORE_BASE64 != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -47,13 +47,13 @@ jobs:
           ./gradlew --no-daemon assembleDebug bundleRelease
 
       - name: Save the test APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: goalkeeper-test-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Save the Play Store bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: goalkeeper-play-store-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
