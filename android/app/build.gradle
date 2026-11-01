@@ -29,6 +29,12 @@ android {
         }
     }
     buildTypes {
+        // Sign the test APK with the same key, so each new test build installs over the last one
+        debug {
+            if (System.getenv("GK_KEYSTORE_PATH")) {
+                signingConfig signingConfigs.release
+            }
+        }
         release {
             if (System.getenv("GK_KEYSTORE_PATH")) {
                 signingConfig signingConfigs.release
